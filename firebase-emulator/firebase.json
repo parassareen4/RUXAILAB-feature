@@ -3,55 +3,44 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
-  "functions": {
-    "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run lint"],
-    "source": "functions"
-  },
-  "hosting": [
+  "functions": [
     {
-      "site": "ruxailab-dev",
-      "public": "dist",
-      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-      "rewrites": [
-        {
-          "source": "**",
-          "destination": "/index.html"
-        }
-      ]
+      "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run lint"],
+      "source": "functions",
+      "codebase": "functions"
     },
     {
-      "site": "ruxailab-prod",
-      "public": "dist",
-      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-      "rewrites": [
-        {
-          "source": "**",
-          "destination": "/index.html"
-        }
-      ]
+      "source": "weight_function",
+      "codebase": "weight_function",
+      "ignore": ["venv", ".git", "firebase-debug.log", "firebase-debug.*.log"]
     }
   ],
+  "hosting": {
+    "site": "ruxailab-dev",
+    "public": "dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
   "emulators": {
     "auth": {
-      "port": 9099,
-      "host": "0.0.0.0"
+      "port": 9099
     },
     "functions": {
-      "port": 5001,
-      "host": "0.0.0.0"
+      "port": 5001
     },
     "firestore": {
-      "port": 8081,
-      "host": "0.0.0.0"
+      "port": 8081
     },
     "hosting": {
-      "port": 5002,
-      "host": "0.0.0.0"
+      "port": 5000
     },
     "ui": {
-      "enabled": true,
-      "port": 4000,
-      "host": "0.0.0.0"
+      "enabled": true
     },
     "singleProjectMode": true,
     "storage": {
@@ -62,3 +51,4 @@
     "rules": "storage.rules"
   }
 }
+	
