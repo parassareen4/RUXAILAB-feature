@@ -4,10 +4,16 @@ import Public from '@/router/modules/public.js'
 import Admin from '@/router/modules/admin.js'
 import SuperAdmin from '@/router/modules/superAdmin.js'
 import store from '@/store'
+import Results from '@/components/Results.vue'
 
 Vue.use(VueRouter)
 
-const routes = [...Public, ...Admin, ...SuperAdmin]
+const routes = [...Public, ...Admin, ...SuperAdmin, {
+  path: '/results',
+  name: 'Results',
+  component: Results,
+  props: true
+}]
 
 const router = new VueRouter({
   mode: 'history',

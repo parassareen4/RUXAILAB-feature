@@ -10,7 +10,7 @@
 
     <v-col cols="12" class="mt-6">
       <v-row>
-        <v-col cols="10" md="5" sm="10" class="card">
+        <v-col cols="10" md="4" sm="10" class="card">
           <CardTypeTest
             :img="require('../../../public/specialist.png')"
             title="Usability Heuristic"
@@ -21,7 +21,7 @@
           />
         </v-col>
 
-        <v-col cols="12" md="5" sm="10" class="card">
+        <v-col cols="12" md="4" sm="10" class="card">
           <CardTypeTest
             :img="require('../../../public/user.png')"
             title="Usability User"
@@ -31,77 +31,152 @@
             @click="setTestType"
           />
         </v-col>
+
+        <v-col cols="12" md="4" sm="10" class="card">
+          <v-card class="mx-auto pa-6" @click="showWcagDialog = true">
+            <v-card-title class="justify-center">
+              <v-icon size="64" color="orange">
+                mdi-access-point
+              </v-icon>
+            </v-card-title>
+            <v-card-title class="justify-center">
+              WCAG Evaluation
+            </v-card-title>
+            <v-card-text>
+              <div class="text-center">
+                <p>WCAG 2.0/2.1/2.2 Compliance</p>
+                <p>Accessibility Score</p>
+                <p>Detailed Evaluation Report</p>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
       </v-row>
     </v-col>
 
-    <CreateTestNameDialog
-      :is-open="nameDialog"
-      :test-type="testType"
-      @close="nameDialog = false"
-    />
+    <!-- WCAG URL Input Dialog -->
+    <v-dialog v-model="showWcagDialog" max-width="600px">
+      <v-card class="pa-6">
+        <v-card-title class="text-h5 mb-4">
+          Enter Website URL for WCAG Evaluation
+        </v-card-title>
+        
+        <v-text-field
+          v-model="wcagUrl"
+          label="Website URL"
+          placeholder="https://example.com"
+          :rules="urlRules"
+          outlined
+          clearable
+          @keyup.enter="startWcagEvaluation"
+        />
+
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="grey darken-1"
+            text
+            @click="showWcagDialog = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="orange"
+            dark
+            :disabled="!isValidUrl"
+            @click="startWcagEvaluation"
+          >
+            Start Evaluation
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- After the WCAG URL Input Dialog -->
+    <v-dialog
+      v-model="showLoadingScreen"
+      persistent
+      fullscreen
+      hide-overlay
+      transition="dialog-bottom-transition"
+    >
+      <v-card class="fill-height">
+        <WcagLoadingScreen
+          :url="wcagUrl"
+          @analysis-complete="handleAnalysisComplete"
+        />
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <script>
-import CardTypeTest from '@/components/atoms/CardTypeTest'
-import CreateTestNameDialog from '@/components/dialogs/CreateTestNameDialog.vue'
+import CardTypeTest from '@/components/atoms/CardTypeTest.vue'
+import WcagLoadingScreen from '@/components/organisms/WcagLoadingScreen.vue'
 
 export default {
+  name: 'CreateBlankView',
   components: {
     CardTypeTest,
-    CreateTestNameDialog,
+    WcagLoadingScreen,
   },
-
   data: () => ({
-    nameDialog: false,
-    testType: '',
+    showWcagDialog: false,
+    showLoadingScreen: false,
+    wcagUrl: '',
+    urlRules: [
+      (v) => !!v || 'URL is required',
+      (v) => /^(http|https):\/\/[^ "]+$/.test(v) || 'URL must be valid',
+    ],
   }),
-
+  computed: {
+    isValidUrl() {
+      return this.wcagUrl && /^(http|https):\/\/[^ "]+$/.test(this.wcagUrl)
+    },
+  },
   methods: {
-    setTestType(type) {
-      this.testType = type
-      this.nameDialog = true
+    setTestType(type, segundType) {
+      this.$store.commit('Tests/SET_TEST_TYPE', segundType)
+      this.$router.push('/create/name')
+    },
+    startWcagEvaluation() {
+      if (this.isValidUrl) {
+        this.showWcagDialog = false
+        this.showLoadingScreen = true
+      }
+    },
+    handleAnalysisComplete() {
+      this.$router.push({
+        name: 'WcagEvaluation',
+        params: { url: this.wcagUrl },
+      })
     },
   },
 }
 </script>
 
 <style scoped>
-.outermost {
-  height: 93vh;
-  background-color: #f9f5f0;
+.card {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
 }
 
 .titles {
-  font-size: 38px;
-  text-align: center;
-  font-weight: 600;
-  color: #f99726;
+  font-size: 24px;
+  font-weight: 500;
+  color: #252525;
 }
 
-.card {
-  margin: auto;
+.v-card {
+  height: 100%;
+  transition: transform 0.2s;
 }
 
-@media (max-width: 600px) {
-  .titles {
-    font-size: 28px; /* Adjust font size for smaller screens */
-  }
-}
-
-@media (min-width: 601px) and (max-width: 1160px) {
-  .outermost {
-    height: auto;
-  }
-
-  .titles {
-    font-size: 32px; /* Adjust font size for medium screens */
-  }
-}
-
-@media (min-width: 1160px) {
-  .titles {
-    font-size: 38px; /* Adjust font size for larger screens */
-  }
+.v-card:hover {
+  transform: translateY(-5px);
 }
 </style>
